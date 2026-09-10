@@ -20,6 +20,7 @@ interface NumbersDashboardContracts {
 
     @Immutable
     data class State(
+        val isLoading: Boolean = true,
         val availableNumbers: List<Int> = emptyList(),
         val languages: List<Pair<String, String>> = listOf("en" to "English", "ru" to "Russian"),
         val visualityTypes: List<VisualityType> = VisualityType.entries,

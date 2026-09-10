@@ -2,11 +2,12 @@ package com.danmurphyy.bilimcha.navigations
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -39,31 +40,30 @@ object NavAnimations {
         forward = {
             slideInHorizontally(
                 initialOffsetX = { it },
-                animationSpec = tween(DEFAULT_DURATION)
-            ) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { -it },
-                        animationSpec = tween(DEFAULT_DURATION)
-                    )
+                animationSpec = tween(DEFAULT_DURATION, easing = FastOutSlowInEasing)
+            ) togetherWith (fadeOut(targetAlpha = 0.7f, animationSpec = tween(DEFAULT_DURATION)) +
+                    scaleOut(targetScale = 0.96f, animationSpec = tween(DEFAULT_DURATION)))
         },
         pop = {
-            slideInHorizontally(
-                initialOffsetX = { -it },
-                animationSpec = tween(DEFAULT_DURATION)
-            ) togetherWith
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(DEFAULT_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(DEFAULT_DURATION)
+                    )) togetherWith
                     slideOutHorizontally(
                         targetOffsetX = { it },
-                        animationSpec = tween(DEFAULT_DURATION)
+                        animationSpec = tween(DEFAULT_DURATION, easing = FastOutSlowInEasing)
                     )
         },
         predictivePop = {
-            slideInHorizontally(
-                initialOffsetX = { -it },
-                animationSpec = tween(DEFAULT_DURATION)
-            ) togetherWith
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(DEFAULT_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(DEFAULT_DURATION)
+                    )) togetherWith
                     slideOutHorizontally(
                         targetOffsetX = { it },
-                        animationSpec = tween(DEFAULT_DURATION)
+                        animationSpec = tween(DEFAULT_DURATION, easing = FastOutSlowInEasing)
                     )
         }
     )
@@ -73,21 +73,30 @@ object NavAnimations {
         forward = {
             slideInVertically(
                 initialOffsetY = { it },
-                animationSpec = tween(MODAL_DURATION)
-            ) togetherWith ExitTransition.None
+                animationSpec = tween(MODAL_DURATION, easing = FastOutSlowInEasing)
+            ) togetherWith (fadeOut(targetAlpha = 0.7f, animationSpec = tween(MODAL_DURATION)) +
+                    scaleOut(targetScale = 0.96f, animationSpec = tween(MODAL_DURATION)))
         },
         pop = {
-            EnterTransition.None togetherWith
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(MODAL_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(MODAL_DURATION)
+                    )) togetherWith
                     slideOutVertically(
                         targetOffsetY = { it },
-                        animationSpec = tween(MODAL_DURATION)
+                        animationSpec = tween(MODAL_DURATION, easing = FastOutSlowInEasing)
                     )
         },
         predictivePop = {
-            EnterTransition.None togetherWith
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(MODAL_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(MODAL_DURATION)
+                    )) togetherWith
                     slideOutVertically(
                         targetOffsetY = { it },
-                        animationSpec = tween(MODAL_DURATION)
+                        animationSpec = tween(MODAL_DURATION, easing = FastOutSlowInEasing)
                     )
         }
     )
@@ -95,13 +104,27 @@ object NavAnimations {
     //Fade (settings, lightweight screens)
     val Fade = Set(
         forward = {
-            fadeIn(tween(MODAL_DURATION)) togetherWith fadeOut(tween(MODAL_DURATION))
+            fadeIn(tween(MODAL_DURATION)) togetherWith (fadeOut(
+                targetAlpha = 0.7f,
+                animationSpec = tween(MODAL_DURATION)
+            ) +
+                    scaleOut(targetScale = 0.96f, animationSpec = tween(MODAL_DURATION)))
         },
         pop = {
-            fadeIn(tween(MODAL_DURATION)) togetherWith fadeOut(tween(MODAL_DURATION))
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(MODAL_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(MODAL_DURATION)
+                    )) togetherWith
+                    fadeOut(tween(MODAL_DURATION))
         },
         predictivePop = {
-            fadeIn(tween(MODAL_DURATION)) togetherWith fadeOut(tween(MODAL_DURATION))
+            (fadeIn(initialAlpha = 0.7f, animationSpec = tween(MODAL_DURATION)) +
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(MODAL_DURATION)
+                    )) togetherWith
+                    fadeOut(tween(MODAL_DURATION))
         }
     )
 
@@ -109,23 +132,23 @@ object NavAnimations {
         forward = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Up,
-                animationSpec = tween(300)
+                animationSpec = tween(DEFAULT_DURATION)
             ) togetherWith fadeOut(
-                animationSpec = tween(300)
+                animationSpec = tween(DEFAULT_DURATION)
             )
         },
         pop = {
-            fadeIn(animationSpec = tween(300)) togetherWith
+            fadeIn(animationSpec = tween(DEFAULT_DURATION)) togetherWith
                     slideOutOfContainer(
                         AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(300)
+                        animationSpec = tween(DEFAULT_DURATION)
                     )
         },
         predictivePop = { _ ->
-            fadeIn(animationSpec = tween(300)) togetherWith
+            fadeIn(animationSpec = tween(DEFAULT_DURATION)) togetherWith
                     slideOutOfContainer(
                         AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(300)
+                        animationSpec = tween(DEFAULT_DURATION)
                     )
         }
     )

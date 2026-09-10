@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.danmurphyy.bilimcha.numbers.dashboard
 
 import androidx.compose.animation.AnimatedVisibility
@@ -10,6 +12,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -59,10 +62,10 @@ import com.danmurphyy.bilimcha.navigations.VisualityType
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen
+import com.danmurphyy.bilimcha.uibases.shimmer
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-@Immutable
 class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
     BaseScreen<NumbersDashboardKey> {
 
@@ -140,7 +143,9 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                         vm.uiEvent(NumbersDashboardContracts.Intent.ToggleAdditionalVisibility)
                     }
 
-                    if (isTransitionFinished) {
+                    if (state.isLoading) {
+                        DashboardShimmer()
+                    } else {
                         AnimatedVisibility(
                             visible = state.isAdditionalVisible,
                             enter = expandVertically(animationSpec = tween(500)) + fadeIn(tween(500)),
@@ -155,9 +160,6 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                         )
 
                         RangeSelectionSection(state, vm)
-                    } else {
-                        // Placeholder to keep layout stable during transition
-                        Spacer(modifier = Modifier.height(200.dp))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -165,6 +167,43 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
 
                 DashboardActionButtons(themeColor, vm)
             }
+        }
+    }
+}
+
+@Composable
+private fun DashboardShimmer() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Settings Shimmer
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .shimmer()
+        )
+
+        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
+
+        // Range Shimmer
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .shimmer()
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp)
+                    .shimmer()
+            )
         }
     }
 }
@@ -372,7 +411,6 @@ private fun LanguageSelector(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RangeSelectionSection(
     state: NumbersDashboardContracts.State,
@@ -423,7 +461,6 @@ private fun RangeSelectionSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RangeDropdown(
     label: String,

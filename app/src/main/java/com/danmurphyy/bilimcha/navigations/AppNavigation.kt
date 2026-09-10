@@ -25,6 +25,7 @@ import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppNavigation(
@@ -35,10 +36,11 @@ fun AppNavigation(
 ) {
     val backStack = rememberNavBackStack(MainHomeKey as BaseNavKey)
 
-    SideEffect {
-        backStackController.setBackStack(backStack)
+    LaunchedEffect(backStack) {
+        withContext(Dispatchers.Main.immediate) {
+            backStackController.setBackStack(backStack)
+        }
     }
-
     CompositionLocalProvider(
         LocalSheetController provides sheetController,
         LocalBackStackController provides backStackController

@@ -18,27 +18,41 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
     NumbersDashboardContracts.State()
 ) {
 
+    private data class InitialNumbersData(
+        val available: List<Int>,
+        val from: Int,
+        val to: Int,
+        val fromOptions: List<Int>,
+        val toOptions: List<Int>,
+    )
+
     override fun onCreate() {
         super.onCreate()
         viewModelScope.launch {
-            val (available, initialFrom, initialTo, fromOptions, toOptions) = withContext(Dispatchers.Default) {
+            val data = withContext(Dispatchers.IO) {
                 val numbers = NumbersRepository.numbers.map { it.value }
-                val from = numbers.first()
-                val to = numbers[10]
+                val from = numbers.firstOrNull() ?: 1
+                val to = numbers.getOrNull(10) ?: 20
                 val fOptions = numbers.filter { n -> n <= to - 4 }
                 val tOptions = numbers.filter { n -> n >= from + 4 }
-                
-                listOf(numbers, from, to, fOptions, tOptions)
+
+                InitialNumbersData(
+                    available = numbers,
+                    from = from,
+                    to = to,
+                    fromOptions = fOptions,
+                    toOptions = tOptions
+                )
             }
 
-            @Suppress("UNCHECKED_CAST")
             updateState {
                 it.copy(
-                    availableNumbers = available as List<Int>,
-                    selectedFrom = initialFrom as Int,
-                    selectedTo = initialTo as Int,
-                    fromOptions = fromOptions as List<Int>,
-                    toOptions = toOptions as List<Int>,
+                    isLoading = false,
+                    availableNumbers = data.available,
+                    selectedFrom = data.from,
+                    selectedTo = data.to,
+                    fromOptions = data.fromOptions,
+                    toOptions = data.toOptions,
                     progress = 0.15f // Mock progress
                 )
             }
