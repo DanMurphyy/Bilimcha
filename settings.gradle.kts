@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Bilimcha"
 include(":app")
+include(":benchmark")

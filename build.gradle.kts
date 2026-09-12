@@ -17,4 +17,5 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.10" apply false
     // Hilt Dependency Injection
     id("com.google.dagger.hilt.android") version "2.60.1" apply false
+    alias(libs.plugins.android.test) apply false
 }

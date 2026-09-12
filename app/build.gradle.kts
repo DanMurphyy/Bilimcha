@@ -43,6 +43,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -111,4 +117,6 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.00"))
     // Compose UI testing framework
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    //Baseline profile
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 }
