@@ -1,5 +1,6 @@
 package com.danmurphyy.benchmark
 
+import androidx.benchmark.macro.BaselineProfileMode
 import androidx.benchmark.macro.CompilationMode
 import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.StartupMode
@@ -17,12 +18,23 @@ class NavigationBenchmark {
     @get:Rule
     val benchmarkRule = MacrobenchmarkRule()
 
+    // Mode 1: No Optimization (Simulates a fresh install without profile)
     @Test
-    fun navigateToNumbers() = benchmarkRule.measureRepeated(
+    fun navigateToNumbersNoCompilation() = navigateToNumbers(CompilationMode.None())
+
+    // Mode 2: Baseline Profile Optimization (The "AOT" result)
+    @Test
+    fun navigateToNumbersWithBaselineProfile() = navigateToNumbers(
+        CompilationMode.Partial(
+            baselineProfileMode = BaselineProfileMode.Require
+        )
+    )
+
+    private fun navigateToNumbers(compilationMode: CompilationMode) = benchmarkRule.measureRepeated(
         packageName = "com.danmurphyy.bilimcha",
         metrics = listOf(FrameTimingMetric()),
-        compilationMode = CompilationMode.Full(),
-        iterations = 3,
+        compilationMode = compilationMode,
+        iterations = 5,
         startupMode = StartupMode.COLD
     ) {
         pressHome()
@@ -36,8 +48,7 @@ class NavigationBenchmark {
         // 2. Wait for the transition to complete
         device.wait(Until.hasObject(By.text("Numbers Practice")), 5000)
 
-        // 3. Force RenderThread activity by performing a small scroll
-        // This ensures the FrameTimingMetric has slices to observe
+        // 3. Force some UI activity to ensure metrics capture frames
         device.findObject(By.scrollable(true))?.scroll(Direction.DOWN, 0.2f)
 
         device.waitForIdle()

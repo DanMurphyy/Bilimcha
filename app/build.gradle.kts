@@ -13,7 +13,9 @@ plugins {
 
 // Optional: Dependency Injection (Hilt)
     id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")// required for Hilt codegen
+    id("com.google.devtools.ksp")
+    alias(libs.plugins.baselineprofile)
+    // required for Hilt codegen
 }
 
 android {
@@ -81,6 +83,7 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.4.0-alpha05")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.0")
+    "baselineProfile"(project(":baselineprofile"))
 
 // Debug / tooling
     // UI inspection / preview tooling

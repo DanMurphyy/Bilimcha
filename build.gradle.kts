@@ -18,4 +18,5 @@ plugins {
     // Hilt Dependency Injection
     id("com.google.dagger.hilt.android") version "2.60.1" apply false
     alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.baselineprofile) apply false
 }
