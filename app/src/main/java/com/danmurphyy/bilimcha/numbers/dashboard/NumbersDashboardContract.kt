@@ -3,7 +3,7 @@ package com.danmurphyy.bilimcha.numbers.dashboard
 import androidx.compose.runtime.Immutable
 import com.danmurphyy.bilimcha.navigations.VisualityType
 
-interface NumbersDashboardContracts {
+interface NumbersDashboardContract {
     sealed interface Intent {
         data class ChangeLanguage(val code: String) : Intent
         data class ChangeVisuality(val type: VisualityType) : Intent
@@ -44,7 +44,8 @@ interface NumbersDashboardContracts {
             val to: Int,
             val language: String,
             val visualityType: VisualityType,
-            val isRepeat: Boolean
+            val isRepeat: Boolean,
+            val isAutoMode: Boolean
         ) : Effect
 
         data class NavigateToTest(

@@ -41,6 +41,7 @@ data class NumbersPracticeKey(
     val language: String = "en",
     val visualityType: VisualityType = VisualityType.Symbols,
     val isRepeat: Boolean = false,
+    val isAutoMode: Boolean = true,
 ) : NavKey
 
 @Serializable

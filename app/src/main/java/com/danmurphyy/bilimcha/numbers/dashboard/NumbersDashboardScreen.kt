@@ -85,19 +85,20 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
         LaunchedEffect(Unit) {
             vm.effect.collect { effect ->
                 when (effect) {
-                    is NumbersDashboardContracts.Effect.NavigateToPractice -> {
+                    is NumbersDashboardContract.Effect.NavigateToPractice -> {
                         navigation.push(
                             NumbersPracticeKey(
                                 fromValue = effect.from,
                                 toValue = effect.to,
                                 language = effect.language,
                                 visualityType = effect.visualityType,
-                                isRepeat = effect.isRepeat
+                                isRepeat = effect.isRepeat,
+                                isAutoMode = effect.isAutoMode
                             )
                         )
                     }
 
-                    is NumbersDashboardContracts.Effect.NavigateToTest -> {
+                    is NumbersDashboardContract.Effect.NavigateToTest -> {
                         navigation.push(
                             NumbersTestKey(
                                 fromValue = effect.from,
@@ -140,7 +141,7 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
 
                     AdditionalSettingsToggle(state.isAdditionalVisible, themeColor) {
-                        vm.uiEvent(NumbersDashboardContracts.Intent.ToggleAdditionalVisibility)
+                        vm.uiEvent(NumbersDashboardContract.Intent.ToggleAdditionalVisibility)
                     }
 
                     if (state.isLoading) {
@@ -267,7 +268,7 @@ private fun AdditionalSettingsToggle(isVisible: Boolean, themeColor: Color, onCl
 
 @Composable
 private fun SettingsGrid(
-    state: NumbersDashboardContracts.State,
+    state: NumbersDashboardContract.State,
     themeColor: Color,
     vm: NumbersDashboardVm,
 ) {
@@ -282,7 +283,7 @@ private fun SettingsGrid(
                 value = if (state.isAutoMode) "Auto" else "Manual",
                 checked = state.isAutoMode,
                 themeColor = themeColor,
-                onCheckedChange = { vm.uiEvent(NumbersDashboardContracts.Intent.ToggleAutoMode(it)) }
+                onCheckedChange = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleAutoMode(it)) }
             )
 
             Spacer(modifier = Modifier.width(1.dp))
@@ -292,7 +293,7 @@ private fun SettingsGrid(
                 value = if (state.isRepeat) "On" else "Off",
                 checked = state.isRepeat,
                 themeColor = themeColor,
-                onCheckedChange = { vm.uiEvent(NumbersDashboardContracts.Intent.ToggleRepeat(it)) }
+                onCheckedChange = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleRepeat(it)) }
             )
         }
 
@@ -304,13 +305,13 @@ private fun SettingsGrid(
             verticalAlignment = Alignment.Top
         ) {
             VisualitySelector(state.visualityType, state.visualityTypes, themeColor) {
-                vm.uiEvent(NumbersDashboardContracts.Intent.ChangeVisuality(it))
+                vm.uiEvent(NumbersDashboardContract.Intent.ChangeVisuality(it))
             }
 
             Spacer(modifier = Modifier.width(1.dp))
 
             LanguageSelector(state.selectedLanguage, state.languages, themeColor) {
-                vm.uiEvent(NumbersDashboardContracts.Intent.ChangeLanguage(it))
+                vm.uiEvent(NumbersDashboardContract.Intent.ChangeLanguage(it))
             }
         }
     }
@@ -413,7 +414,7 @@ private fun LanguageSelector(
 
 @Composable
 private fun RangeSelectionSection(
-    state: NumbersDashboardContracts.State,
+    state: NumbersDashboardContract.State,
     vm: NumbersDashboardVm,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -431,10 +432,10 @@ private fun RangeSelectionSection(
                 value = state.selectedFrom.toString(),
                 expanded = state.expandedFrom,
                 options = state.fromOptions,
-                onToggle = { vm.uiEvent(NumbersDashboardContracts.Intent.ToggleExpandedFrom) },
+                onToggle = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedFrom) },
                 onSelect = {
-                    vm.uiEvent(NumbersDashboardContracts.Intent.SelectFrom(it))
-                    vm.uiEvent(NumbersDashboardContracts.Intent.ToggleExpandedFrom)
+                    vm.uiEvent(NumbersDashboardContract.Intent.SelectFrom(it))
+                    vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedFrom)
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -444,10 +445,10 @@ private fun RangeSelectionSection(
                 value = state.selectedTo.toString(),
                 expanded = state.expandedTo,
                 options = state.toOptions,
-                onToggle = { vm.uiEvent(NumbersDashboardContracts.Intent.ToggleExpandedTo) },
+                onToggle = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedTo) },
                 onSelect = {
-                    vm.uiEvent(NumbersDashboardContracts.Intent.SelectTo(it))
-                    vm.uiEvent(NumbersDashboardContracts.Intent.ToggleExpandedTo)
+                    vm.uiEvent(NumbersDashboardContract.Intent.SelectTo(it))
+                    vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedTo)
                 },
                 modifier = Modifier.weight(1f)
             )
@@ -509,7 +510,7 @@ private fun DashboardActionButtons(themeColor: Color, vm: NumbersDashboardVm) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Button(
-            onClick = { vm.uiEvent(NumbersDashboardContracts.Intent.StartPractice) },
+            onClick = { vm.uiEvent(NumbersDashboardContract.Intent.StartPractice) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(72.dp),
@@ -529,7 +530,7 @@ private fun DashboardActionButtons(themeColor: Color, vm: NumbersDashboardVm) {
         }
 
         Button(
-            onClick = { vm.uiEvent(NumbersDashboardContracts.Intent.StartTest) },
+            onClick = { vm.uiEvent(NumbersDashboardContract.Intent.StartTest) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(72.dp),

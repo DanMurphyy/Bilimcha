@@ -7,6 +7,8 @@ import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
 import com.danmurphyy.bilimcha.navigations.registerScreen
 import com.danmurphyy.bilimcha.numbers.dashboard.NumbersDashboardScreen
+import com.danmurphyy.bilimcha.numbers.practice.NumbersPracticeScreen
+import com.danmurphyy.bilimcha.numbers.testing.NumbersTestScreen
 
 fun NavEntryScope.numberEntryBuilder(){
     registerScreen<NumbersDashboardKey>(NavAnimationStyle.HORIZONTAL) {

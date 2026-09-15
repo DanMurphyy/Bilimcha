@@ -12,10 +12,10 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContracts.Intent,
-        NumbersDashboardContracts.State,
-        NumbersDashboardContracts.Effect>(
-    NumbersDashboardContracts.State()
+class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract.Intent,
+        NumbersDashboardContract.State,
+        NumbersDashboardContract.Effect>(
+    NumbersDashboardContract.State()
 ) {
 
     private data class InitialNumbersData(
@@ -62,21 +62,21 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
         }
     }
 
-    override fun handleIntent(intent: NumbersDashboardContracts.Intent) {
+    override fun handleIntent(intent: NumbersDashboardContract.Intent) {
         when (intent) {
-            is NumbersDashboardContracts.Intent.ChangeLanguage -> {
+            is NumbersDashboardContract.Intent.ChangeLanguage -> {
                 updateState { it.copy(selectedLanguage = intent.code) }
             }
 
-            is NumbersDashboardContracts.Intent.ChangeVisuality -> {
+            is NumbersDashboardContract.Intent.ChangeVisuality -> {
                 updateState { it.copy(visualityType = intent.type) }
             }
 
-            is NumbersDashboardContracts.Intent.ToggleAutoMode -> {
+            is NumbersDashboardContract.Intent.ToggleAutoMode -> {
                 updateState { it.copy(isAutoMode = intent.enabled) }
             }
 
-            is NumbersDashboardContracts.Intent.SelectFrom -> {
+            is NumbersDashboardContract.Intent.SelectFrom -> {
                 updateState {
                     val newState = it.copy(selectedFrom = intent.value)
                     newState.copy(
@@ -85,7 +85,7 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                 }
             }
 
-            is NumbersDashboardContracts.Intent.SelectTo -> {
+            is NumbersDashboardContract.Intent.SelectTo -> {
                 updateState {
                     val newState = it.copy(selectedTo = intent.value)
                     newState.copy(
@@ -94,39 +94,40 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                 }
             }
 
-            NumbersDashboardContracts.Intent.ToggleExpandedFrom -> {
+            NumbersDashboardContract.Intent.ToggleExpandedFrom -> {
                 updateState { it.copy(expandedFrom = !it.expandedFrom) }
             }
 
-            NumbersDashboardContracts.Intent.ToggleExpandedTo -> {
+            NumbersDashboardContract.Intent.ToggleExpandedTo -> {
                 updateState { it.copy(expandedTo = !it.expandedTo) }
             }
 
-            NumbersDashboardContracts.Intent.ToggleAdditionalVisibility -> {
+            NumbersDashboardContract.Intent.ToggleAdditionalVisibility -> {
                 updateState { it.copy(isAdditionalVisible = !it.isAdditionalVisible) }
             }
 
-            is NumbersDashboardContracts.Intent.ToggleRepeat -> {
+            is NumbersDashboardContract.Intent.ToggleRepeat -> {
                 updateState { it.copy(isRepeat = intent.enabled) }
             }
 
-            NumbersDashboardContracts.Intent.StartPractice -> {
+            NumbersDashboardContract.Intent.StartPractice -> {
                 val s = getState()
                 sendEffect {
-                    NumbersDashboardContracts.Effect.NavigateToPractice(
+                    NumbersDashboardContract.Effect.NavigateToPractice(
                         from = s.selectedFrom,
                         to = s.selectedTo,
                         language = s.selectedLanguage,
                         visualityType = s.visualityType,
-                        isRepeat = s.isRepeat
+                        isRepeat = s.isRepeat,
+                        isAutoMode = s.isAutoMode
                     )
                 }
             }
 
-            NumbersDashboardContracts.Intent.StartTest -> {
+            NumbersDashboardContract.Intent.StartTest -> {
                 val s = getState()
                 sendEffect {
-                    NumbersDashboardContracts.Effect.NavigateToTest(
+                    NumbersDashboardContract.Effect.NavigateToTest(
                         from = s.selectedFrom,
                         to = s.selectedTo,
                         language = s.selectedLanguage,
