@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.profile
+package com.danmurphyy.bilimcha.features.profile
 
 import com.danmurphyy.bilimcha.navigations.UserFeatureData
 import com.danmurphyy.bilimcha.uibases.BaseVM

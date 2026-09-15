@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.numbers.testing
+package com.danmurphyy.bilimcha.features.numbers.testing
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
 import com.danmurphyy.bilimcha.navigations.VisualityType
-import com.danmurphyy.bilimcha.numbers.Number
-import com.danmurphyy.bilimcha.numbers.NumbersRepository
+import com.danmurphyy.bilimcha.features.numbers.Number
+import com.danmurphyy.bilimcha.features.numbers.NumbersRepository
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen

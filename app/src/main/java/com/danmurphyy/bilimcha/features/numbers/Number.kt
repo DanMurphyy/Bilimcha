@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.numbers
+package com.danmurphyy.bilimcha.features.numbers
 
 data class Number(
     val value: Int,

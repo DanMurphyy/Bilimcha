@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.profile
+package com.danmurphyy.bilimcha.features.profile
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets

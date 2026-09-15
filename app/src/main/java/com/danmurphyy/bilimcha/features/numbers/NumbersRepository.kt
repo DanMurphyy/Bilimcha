@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.numbers
+package com.danmurphyy.bilimcha.features.numbers
 
 object NumbersRepository {
     val numbers = listOf(

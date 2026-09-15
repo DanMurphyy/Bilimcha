@@ -1,8 +1,8 @@
-package com.danmurphyy.bilimcha.numbers.practice
+package com.danmurphyy.bilimcha.features.numbers.practice
 
 import androidx.compose.runtime.Immutable
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
-import com.danmurphyy.bilimcha.numbers.Number
+import com.danmurphyy.bilimcha.features.numbers.Number
 
 interface NumbersPracticeContract {
     sealed interface Intent {

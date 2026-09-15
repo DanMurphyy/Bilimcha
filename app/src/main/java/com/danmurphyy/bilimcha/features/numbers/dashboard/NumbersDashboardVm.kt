@@ -1,7 +1,7 @@
-package com.danmurphyy.bilimcha.numbers.dashboard
+package com.danmurphyy.bilimcha.features.numbers.dashboard
 
 import androidx.lifecycle.viewModelScope
-import com.danmurphyy.bilimcha.numbers.NumbersRepository
+import com.danmurphyy.bilimcha.features.numbers.NumbersRepository
 import com.danmurphyy.bilimcha.uibases.BaseVM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

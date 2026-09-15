@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.numbers.practice
+package com.danmurphyy.bilimcha.features.numbers.practice
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -47,7 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
 import com.danmurphyy.bilimcha.navigations.VisualityType
-import com.danmurphyy.bilimcha.numbers.Number
+import com.danmurphyy.bilimcha.features.numbers.Number
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen

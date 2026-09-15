@@ -1,4 +1,4 @@
-package com.danmurphyy.bilimcha.numbers.dashboard
+package com.danmurphyy.bilimcha.features.numbers.dashboard
 
 import androidx.compose.runtime.Immutable
 import com.danmurphyy.bilimcha.navigations.VisualityType

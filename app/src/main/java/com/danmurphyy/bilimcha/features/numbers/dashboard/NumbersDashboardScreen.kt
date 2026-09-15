@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.danmurphyy.bilimcha.numbers.dashboard
+package com.danmurphyy.bilimcha.features.numbers.dashboard
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState

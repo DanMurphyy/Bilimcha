@@ -1,6 +1,6 @@
-package com.danmurphyy.bilimcha.numbers.practice
+package com.danmurphyy.bilimcha.features.numbers.practice
 
-import com.danmurphyy.bilimcha.numbers.NumbersRepository
+import com.danmurphyy.bilimcha.features.numbers.NumbersRepository
 import com.danmurphyy.bilimcha.uibases.BaseVM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
