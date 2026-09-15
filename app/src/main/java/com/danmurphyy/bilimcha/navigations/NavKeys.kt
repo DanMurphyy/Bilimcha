@@ -15,6 +15,7 @@ interface NavKey : BaseNavKey, Parcelable
 @Parcelize
 data object MainHomeKey : NavKey
 
+//Numbers Feature
 @Serializable
 @Parcelize
 data object NumbersDashboardKey : NavKey
@@ -31,6 +32,7 @@ data class NumbersTestKey(
     val language: String = "en",
     val visualityType: VisualityType = VisualityType.Symbols,
     val isRepeat: Boolean = false,
+    val isAutoMode: Boolean = true,
 ) : NavKey
 
 @Serializable
@@ -51,10 +53,12 @@ enum class VisualityType {
     Both
 }
 
+//Abc Feature
 @Serializable
 @Parcelize
 data object AbcKey : NavKey
 
+//Abc Feature
 @Serializable
 @Parcelize
 data object AnimalsKey : NavKey
