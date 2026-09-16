@@ -29,6 +29,7 @@ data class PracticeDashboardKey(val practiceType: PracticeType) : NavKey
 data class NumbersTestKey(
     val fromValue: Int,
     val toValue: Int,
+    val rangeMode: String = "all",
     val language: String = "en",
     val visualityType: VisualityType = VisualityType.Symbols,
     val isRepeat: Boolean = false,
@@ -40,6 +41,7 @@ data class NumbersTestKey(
 data class NumbersPracticeKey(
     val fromValue: Int,
     val toValue: Int,
+    val rangeMode: String = "all",
     val language: String = "en",
     val visualityType: VisualityType = VisualityType.Symbols,
     val isRepeat: Boolean = false,

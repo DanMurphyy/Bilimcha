@@ -15,9 +15,11 @@ class NumbersPracticeVm @Inject constructor() : BaseVM<NumbersPracticeContract.I
     override fun handleIntent(intent: NumbersPracticeContract.Intent) {
         when (intent) {
             is NumbersPracticeContract.Intent.Init -> {
-                val filteredNumbers = NumbersRepository.numbers.filter {
-                    it.value in intent.key.fromValue..intent.key.toValue
-                }
+                val filteredNumbers = NumbersRepository.getNumbers(
+                    from = intent.key.fromValue,
+                    to = intent.key.toValue,
+                    mode = intent.key.rangeMode
+                )
                 updateState {
                     it.copy(
                         isLoading = false,

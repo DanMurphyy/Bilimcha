@@ -10,9 +10,10 @@ interface NumbersDashboardContract {
         data class ToggleAutoMode(val enabled: Boolean) : Intent
         data class SelectFrom(val value: Int) : Intent
         data class SelectTo(val value: Int) : Intent
+        data class SelectQuickRange(val from: Int, val to: Int, val mode: String) : Intent
         data object ToggleExpandedFrom : Intent
         data object ToggleExpandedTo : Intent
-        data object ToggleAdditionalVisibility : Intent
+        data object ToggleSettingsDialog : Intent
         data class ToggleRepeat(val enabled: Boolean) : Intent
         data object StartPractice : Intent
         data object StartTest : Intent
@@ -29,12 +30,13 @@ interface NumbersDashboardContract {
         val isAutoMode: Boolean = true,
         val selectedFrom: Int = 1,
         val selectedTo: Int = 20,
+        val rangeMode: String = "all",
         val expandedFrom: Boolean = false,
         val expandedTo: Boolean = false,
         val progress: Float = 0f,
         val fromOptions: List<Int> = emptyList(),
         val toOptions: List<Int> = emptyList(),
-        val isAdditionalVisible: Boolean = true,
+        val isSettingsDialogOpen: Boolean = false,
         val isRepeat: Boolean = true
     )
 
@@ -42,6 +44,7 @@ interface NumbersDashboardContract {
         data class NavigateToPractice(
             val from: Int,
             val to: Int,
+            val rangeMode: String,
             val language: String,
             val visualityType: VisualityType,
             val isRepeat: Boolean,
@@ -51,6 +54,7 @@ interface NumbersDashboardContract {
         data class NavigateToTest(
             val from: Int,
             val to: Int,
+            val rangeMode: String,
             val language: String,
             val visualityType: VisualityType,
             val isRepeat: Boolean

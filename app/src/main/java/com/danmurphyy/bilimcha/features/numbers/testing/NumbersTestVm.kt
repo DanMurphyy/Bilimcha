@@ -39,9 +39,11 @@ class NumbersTestVm @Inject constructor() :
     }
 
     private fun initTest(key: NumbersTestKey) {
-        testNumbers = NumbersRepository.numbers.filter {
-            it.value in key.fromValue..key.toValue
-        }.shuffled()
+        testNumbers = NumbersRepository.getNumbers(
+            from = key.fromValue,
+            to = key.toValue,
+            mode = key.rangeMode
+        ).shuffled()
 
         updateState {
             it.copy(
@@ -99,9 +101,16 @@ class NumbersTestVm @Inject constructor() :
 
         val currentNumber = testNumbers[index]
 
-        // Pick 2 wrong options
-        val otherNumbers = NumbersRepository.numbers.filter { it.value != currentNumber.value }
-        val wrongOptions = otherNumbers.shuffled().take(2)
+        // Pick 2 wrong options strictly from the same filtered test range pool to preserve valid difficulty constraints
+        val otherRangeNumbers = testNumbers.filter { it.value != currentNumber.value }
+        
+        // Fallback to global pool only if the selected range has less than 3 elements total
+        val wrongOptions = if (otherRangeNumbers.size >= 2) {
+            otherRangeNumbers.shuffled().take(2)
+        } else {
+            NumbersRepository.numbers.filter { it.value != currentNumber.value }.shuffled().take(2)
+        }
+        
         val options = (wrongOptions + currentNumber).shuffled()
 
         updateState {
@@ -198,15 +207,21 @@ class NumbersTestVm @Inject constructor() :
             }
             viewModelScope.launch {
                 delay(2000.milliseconds)
+                // Clear colors right before moving onto the next card structure
+                updateState { it.copy(selectedOption = null, isCorrectSelected = null) }
                 nextQuestion()
             }
         } else {
             updateState { it.copy(currentWrongAttempts = newWrongAttempts) }
-            // Restart audio loop after short delay or just let it restart in next tick?
-            // User wants 1 play at a time. After wrong sound, we should probably wait until wrong sound finished
-            // before starting number audio loop again.
             viewModelScope.launch {
-                delay(2000.milliseconds)
+                // Keep the item red for a short time (e.g. 1.2 seconds) to sync with audio duration feedback
+                delay(1200.milliseconds)
+                updateState {
+                    it.copy(
+                        selectedOption = null,
+                        isCorrectSelected = null
+                    )
+                }
                 if (getState().isSelectionEnabled) {
                     startAudioLoop()
                 }

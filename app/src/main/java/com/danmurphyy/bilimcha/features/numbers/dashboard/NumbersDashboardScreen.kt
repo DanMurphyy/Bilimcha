@@ -2,15 +2,15 @@
 
 package com.danmurphyy.bilimcha.features.numbers.dashboard
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,22 +29,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.NumbersDashboardKey
@@ -90,6 +92,7 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                             NumbersPracticeKey(
                                 fromValue = effect.from,
                                 toValue = effect.to,
+                                rangeMode = effect.rangeMode,
                                 language = effect.language,
                                 visualityType = effect.visualityType,
                                 isRepeat = effect.isRepeat,
@@ -103,6 +106,7 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                             NumbersTestKey(
                                 fromValue = effect.from,
                                 toValue = effect.to,
+                                rangeMode = effect.rangeMode,
                                 language = effect.language,
                                 visualityType = effect.visualityType,
                                 isRepeat = effect.isRepeat
@@ -118,7 +122,12 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                 AppHeader(
                     title = "Numbers Practice",
                     showBackButton = true,
-                    onBackClick = { navigation.pop() }
+                    onBackClick = { navigation.pop() },
+                    rightContent = {
+                        AdditionalSettingsToggle(themeColor) {
+                            vm.uiEvent(NumbersDashboardContract.Intent.ToggleSettingsDialog)
+                        }
+                    }
                 )
             }
         ) { padding ->
@@ -140,19 +149,13 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
 
                     HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
 
-                    AdditionalSettingsToggle(state.isAdditionalVisible, themeColor) {
-                        vm.uiEvent(NumbersDashboardContract.Intent.ToggleAdditionalVisibility)
-                    }
-
                     if (state.isLoading) {
                         DashboardShimmer()
                     } else {
-                        AnimatedVisibility(
-                            visible = state.isAdditionalVisible,
-                            enter = expandVertically(animationSpec = tween(500)) + fadeIn(tween(500)),
-                            exit = shrinkVertically(animationSpec = tween(500)) + fadeOut(tween(500))
-                        ) {
-                            SettingsGrid(state, themeColor, vm)
+                        if (state.isSettingsDialogOpen) {
+                            SettingsDialog(state, themeColor, vm) {
+                                vm.uiEvent(NumbersDashboardContract.Intent.ToggleSettingsDialog)
+                            }
                         }
 
                         HorizontalDivider(
@@ -248,21 +251,96 @@ private fun ProgressCard(progress: Float, themeColor: Color) {
 }
 
 @Composable
-private fun AdditionalSettingsToggle(isVisible: Boolean, themeColor: Color, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = if (isVisible) "↑ Additional" else "↓ Additional",
-            color = themeColor.copy(alpha = 0.7f),
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.labelLarge
+private fun AdditionalSettingsToggle(themeColor: Color, onClick: () -> Unit) {
+    val scale = remember { Animatable(1f) }
+
+    LaunchedEffect(Unit) {
+        scale.animateTo(
+            targetValue = 1.08f,
+            animationSpec = repeatable(
+                iterations = 4,
+                animation = tween(500, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            )
         )
+        scale.animateTo(1f, tween(300))
+    }
+
+    Box(
+        modifier = Modifier
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .scale(scale.value)
+                .clickable { onClick() },
+            shape = RoundedCornerShape(50),
+            colors = CardDefaults.cardColors(containerColor = themeColor.copy(alpha = 0.1f)),
+            border = BorderStroke(2.dp, themeColor.copy(alpha = 0.5f))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "⚙️ Settings",
+                    color = themeColor,
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsDialog(
+    state: NumbersDashboardContract.State,
+    themeColor: Color,
+    vm: NumbersDashboardVm,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Additional Settings",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = themeColor
+                )
+
+                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
+
+                SettingsGrid(state, themeColor, vm)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = themeColor)
+                ) {
+                    Text("Close", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
     }
 }
 
@@ -299,10 +377,10 @@ private fun SettingsGrid(
 
         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
 
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             VisualitySelector(state.visualityType, state.visualityTypes, themeColor) {
                 vm.uiEvent(NumbersDashboardContract.Intent.ChangeVisuality(it))
@@ -412,90 +490,91 @@ private fun LanguageSelector(
     }
 }
 
+private data class QuickRangeItem(
+    val label: String,
+    val from: Int,
+    val to: Int,
+    val mode: String,
+)
+
 @Composable
 private fun RangeSelectionSection(
     state: NumbersDashboardContract.State,
     vm: NumbersDashboardVm,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val quickRanges = remember {
+        listOf(
+            QuickRangeItem("All", 0, 20, "full_all"),
+            QuickRangeItem("0-10", 0, 10, "all"),
+            QuickRangeItem("11-20", 11, 20, "all"),
+            QuickRangeItem("21-30", 21, 30, "all"),
+            QuickRangeItem("40-90 (Tens)", 40, 90, "tenths"),
+            QuickRangeItem("100-900 + 1M", 100, 1000000, "hundreds_million")
+        )
+    }
+    val themeColor = KidsNumbers
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
             text = "Choose Range",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            RangeDropdown(
-                label = "From",
-                value = state.selectedFrom.toString(),
-                expanded = state.expandedFrom,
-                options = state.fromOptions,
-                onToggle = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedFrom) },
-                onSelect = {
-                    vm.uiEvent(NumbersDashboardContract.Intent.SelectFrom(it))
-                    vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedFrom)
-                },
-                modifier = Modifier.weight(1f)
-            )
 
-            RangeDropdown(
-                label = "To",
-                value = state.selectedTo.toString(),
-                expanded = state.expandedTo,
-                options = state.toOptions,
-                onToggle = { vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedTo) },
-                onSelect = {
-                    vm.uiEvent(NumbersDashboardContract.Intent.SelectTo(it))
-                    vm.uiEvent(NumbersDashboardContract.Intent.ToggleExpandedTo)
-                },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Text(
-            text = "* Minimum range is 5 numbers",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
-        )
-    }
-}
-
-@Composable
-private fun RangeDropdown(
-    label: String,
-    value: String,
-    expanded: Boolean,
-    options: List<Int>,
-    onToggle: () -> Unit,
-    onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { onToggle() },
-        modifier = modifier
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true),
-            shape = RoundedCornerShape(12.dp)
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = onToggle
-        ) {
-            options.forEach { number ->
-                DropdownMenuItem(
-                    text = { Text(number.toString()) },
-                    onClick = { onSelect(number) },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                )
+        // Split into chunks of 2 items per row to form a neat grid fully visible within the screen
+        val rows = quickRanges.chunked(2)
+        rows.forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                rowItems.forEach { item ->
+                    val isSelected = if (item.mode == "full_all") {
+                        state.rangeMode == "full_all"
+                    } else {
+                        state.selectedFrom == item.from &&
+                                state.selectedTo == item.to &&
+                                state.rangeMode == item.mode
+                    }
+                    
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(64.dp)
+                            .clickable {
+                                vm.uiEvent(
+                                    NumbersDashboardContract.Intent.SelectQuickRange(
+                                        item.from,
+                                        item.to,
+                                        item.mode
+                                    )
+                                )
+                            },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) themeColor.copy(alpha = 0.15f) else Color.White
+                        ),
+                        border = BorderStroke(
+                            width = if (isSelected) 3.dp else 1.dp,
+                            color = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.6f)
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = if (isSelected) 4.dp else 1.dp
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = item.label,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (isSelected) themeColor else Color.DarkGray
+                            )
+                        }
+                    }
+                }
             }
         }
     }

@@ -30,9 +30,9 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
         super.onCreate()
         viewModelScope.launch {
             val data = withContext(Dispatchers.IO) {
-                val numbers = NumbersRepository.numbers.map { it.value }
-                val from = numbers.firstOrNull() ?: 1
-                val to = numbers.getOrNull(10) ?: 20
+                val numbers = (0..30).toList() + listOf(40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000)
+                val from = 0
+                val to = 10
                 val fOptions = numbers.filter { n -> n <= to - 4 }
                 val tOptions = numbers.filter { n -> n >= from + 4 }
 
@@ -56,9 +56,6 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                     progress = 0.15f // Mock progress
                 )
             }
-
-            delay(1500.milliseconds)
-            updateState { it.copy(isAdditionalVisible = false) }
         }
     }
 
@@ -78,18 +75,34 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
 
             is NumbersDashboardContract.Intent.SelectFrom -> {
                 updateState {
-                    val newState = it.copy(selectedFrom = intent.value)
+                    val newFrom = intent.value
+                    val newTo = if (it.selectedTo < newFrom + 4) newFrom + 4 else it.selectedTo
+                    val newState = it.copy(selectedFrom = newFrom, selectedTo = newTo, rangeMode = "all")
                     newState.copy(
-                        toOptions = newState.availableNumbers.filter { n -> n >= intent.value + 4 }
+                        fromOptions = newState.availableNumbers.filter { n -> n <= newTo - 4 },
+                        toOptions = newState.availableNumbers.filter { n -> n >= newFrom + 4 }
                     )
                 }
             }
 
             is NumbersDashboardContract.Intent.SelectTo -> {
                 updateState {
-                    val newState = it.copy(selectedTo = intent.value)
+                    val newTo = intent.value
+                    val newFrom = if (it.selectedFrom > newTo - 4) newTo - 4 else it.selectedFrom
+                    val newState = it.copy(selectedFrom = newFrom, selectedTo = newTo, rangeMode = "all")
                     newState.copy(
-                        fromOptions = newState.availableNumbers.filter { n -> n <= intent.value - 4 }
+                        fromOptions = newState.availableNumbers.filter { n -> n <= newTo - 4 },
+                        toOptions = newState.availableNumbers.filter { n -> n >= newFrom + 4 }
+                    )
+                }
+            }
+
+            is NumbersDashboardContract.Intent.SelectQuickRange -> {
+                updateState {
+                    it.copy(
+                        selectedFrom = intent.from,
+                        selectedTo = intent.to,
+                        rangeMode = intent.mode
                     )
                 }
             }
@@ -102,8 +115,8 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                 updateState { it.copy(expandedTo = !it.expandedTo) }
             }
 
-            NumbersDashboardContract.Intent.ToggleAdditionalVisibility -> {
-                updateState { it.copy(isAdditionalVisible = !it.isAdditionalVisible) }
+            NumbersDashboardContract.Intent.ToggleSettingsDialog -> {
+                updateState { it.copy(isSettingsDialogOpen = !it.isSettingsDialogOpen) }
             }
 
             is NumbersDashboardContract.Intent.ToggleRepeat -> {
@@ -116,6 +129,7 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                     NumbersDashboardContract.Effect.NavigateToPractice(
                         from = s.selectedFrom,
                         to = s.selectedTo,
+                        rangeMode = s.rangeMode,
                         language = s.selectedLanguage,
                         visualityType = s.visualityType,
                         isRepeat = s.isRepeat,
@@ -130,6 +144,7 @@ class NumbersDashboardVm @Inject constructor() : BaseVM<NumbersDashboardContract
                     NumbersDashboardContract.Effect.NavigateToTest(
                         from = s.selectedFrom,
                         to = s.selectedTo,
+                        rangeMode = s.rangeMode,
                         language = s.selectedLanguage,
                         visualityType = s.visualityType,
                         isRepeat = s.isRepeat
