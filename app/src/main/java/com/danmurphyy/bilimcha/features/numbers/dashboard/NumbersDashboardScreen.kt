@@ -2,6 +2,7 @@
 
 package com.danmurphyy.bilimcha.features.numbers.dashboard
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -440,13 +441,18 @@ private fun VisualitySelector(
             fontWeight = FontWeight.Bold,
             color = Color.Gray
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             types.forEach { type ->
                 VisualityOptionCard(
                     type = type,
                     isSelected = selectedType == type,
                     onClick = { onSelect(type) },
                     themeColor = themeColor,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -467,12 +473,13 @@ private fun LanguageSelector(
             fontWeight = FontWeight.Bold,
             color = Color.Gray
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             languages.forEach { (code, label) ->
                 FilterChip(
                     selected = selectedCode == code,
                     onClick = { onSelect(code) },
-                    label = { Text(text = label, fontSize = 12.sp) },
+                    label = { Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                     modifier = Modifier.height(32.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = themeColor.copy(alpha = 0.2f),
@@ -482,7 +489,7 @@ private fun LanguageSelector(
                         enabled = true,
                         selected = selectedCode == code,
                         selectedBorderColor = themeColor,
-                        selectedBorderWidth = 1.dp
+                        selectedBorderWidth = 1.5.dp
                     )
                 )
             }
@@ -536,6 +543,22 @@ private fun RangeSelectionSection(
                                 state.selectedTo == item.to &&
                                 state.rangeMode == item.mode
                     }
+
+                    val cardBgColor by animateColorAsState(
+                        targetValue = if (isSelected) themeColor else Color.White,
+                        animationSpec = tween(durationMillis = 250),
+                        label = "range_bg"
+                    )
+                    val cardTextColor by animateColorAsState(
+                        targetValue = if (isSelected) Color.White else Color.DarkGray,
+                        animationSpec = tween(durationMillis = 250),
+                        label = "range_text"
+                    )
+                    val cardBorderColor by animateColorAsState(
+                        targetValue = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.6f),
+                        animationSpec = tween(durationMillis = 250),
+                        label = "range_border"
+                    )
                     
                     Card(
                         modifier = Modifier
@@ -552,14 +575,14 @@ private fun RangeSelectionSection(
                             },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) themeColor.copy(alpha = 0.15f) else Color.White
+                            containerColor = cardBgColor
                         ),
                         border = BorderStroke(
-                            width = if (isSelected) 3.dp else 1.dp,
-                            color = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.6f)
+                            width = 1.5.dp,
+                            color = cardBorderColor
                         ),
                         elevation = CardDefaults.cardElevation(
-                            defaultElevation = if (isSelected) 4.dp else 1.dp
+                            defaultElevation = if (isSelected) 6.dp else 2.dp
                         )
                     ) {
                         Box(
@@ -570,7 +593,7 @@ private fun RangeSelectionSection(
                                 text = item.label,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (isSelected) themeColor else Color.DarkGray
+                                color = cardTextColor
                             )
                         }
                     }
@@ -592,17 +615,17 @@ private fun DashboardActionButtons(themeColor: Color, vm: NumbersDashboardVm) {
             onClick = { vm.uiEvent(NumbersDashboardContract.Intent.StartPractice) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp),
-            shape = RoundedCornerShape(24.dp),
+                .height(64.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(containerColor = themeColor),
             elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 8.dp,
+                defaultElevation = 6.dp,
                 pressedElevation = 2.dp
             )
         ) {
             Text(
                 text = "🚀 LEARN",
-                fontSize = 22.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp
             )
@@ -612,26 +635,21 @@ private fun DashboardActionButtons(themeColor: Color, vm: NumbersDashboardVm) {
             onClick = { vm.uiEvent(NumbersDashboardContract.Intent.StartTest) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp),
-            shape = RoundedCornerShape(
-                topStart = 8.dp,
-                bottomEnd = 8.dp,
-                topEnd = 32.dp,
-                bottomStart = 32.dp
-            ),
+                .height(64.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
                 contentColor = themeColor
             ),
-            border = BorderStroke(3.dp, themeColor),
+            border = BorderStroke(2.5.dp, themeColor),
             elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 6.dp,
-                pressedElevation = 2.dp
+                defaultElevation = 4.dp,
+                pressedElevation = 1.dp
             )
         ) {
             Text(
                 text = "🎯 START TEST",
-                fontSize = 22.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
                 letterSpacing = 1.sp
             )
@@ -645,44 +663,59 @@ fun VisualityOptionCard(
     isSelected: Boolean,
     onClick: () -> Unit,
     themeColor: Color,
+    modifier: Modifier = Modifier,
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) themeColor else Color.White,
+        animationSpec = tween(durationMillis = 250),
+        label = "vis_bg"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White else themeColor,
+        animationSpec = tween(durationMillis = 250),
+        label = "vis_content"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.5f),
+        animationSpec = tween(durationMillis = 250),
+        label = "vis_border"
+    )
+
     Card(
-        modifier = Modifier
-            .wrapContentSize()
-            .height(50.dp)
+        modifier = modifier
+            .height(60.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) themeColor.copy(alpha = 0.15f) else Color.White
-        ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
         border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.5f)
+            width = 1.5.dp,
+            color = borderColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 4.dp else 1.dp
         )
     ) {
         Column(
-            modifier = Modifier
-                .height(50.dp)
-                .width(50.dp),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             when (type) {
                 VisualityType.Symbols -> {
-                    Text("1", fontSize = 20.sp, fontWeight = FontWeight.Black, color = themeColor)
+                    Text("1", fontSize = 22.sp, fontWeight = FontWeight.Black, color = contentColor)
                 }
 
                 VisualityType.Text -> {
-                    Text("One", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = themeColor)
+                    Text("One", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = contentColor)
                 }
 
                 VisualityType.Both -> {
-                    Text("1", fontSize = 20.sp, fontWeight = FontWeight.Black, color = themeColor)
+                    Text("1", fontSize = 20.sp, fontWeight = FontWeight.Black, color = contentColor)
                     Text(
                         "One",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = themeColor
+                        fontWeight = FontWeight.Bold,
+                        color = contentColor
                     )
                 }
             }
