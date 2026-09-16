@@ -173,9 +173,9 @@ private fun BigNumberCard(
                 .fillMaxWidth()
                 .weight(0.7f),
             shape = RoundedCornerShape(40.dp),
-            colors = CardDefaults.cardColors(containerColor = KidsNumbers.copy(alpha = 0.1f)),
-            border = BorderStroke(4.dp, KidsNumbers.copy(alpha = 0.5f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(4.dp, KidsNumbers.copy(alpha = 0.3f)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -189,7 +189,7 @@ private fun BigNumberCard(
                             text = name,
                             fontSize = 56.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.DarkGray
+                            color = KidsNumbers
                         )
                     }
 
@@ -210,11 +210,13 @@ private fun BigNumberCard(
                             color = KidsNumbers
                         )
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Text(
                             text = name,
-                            fontSize = 56.sp,
+                            fontSize = 44.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.DarkGray
+                            color = Color.Gray
                         )
                     }
                 }
