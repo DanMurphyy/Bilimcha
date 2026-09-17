@@ -6,45 +6,44 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileHomeDetailVm @Inject constructor() :
-    BaseVM<
-            ProfileHomeDetailContract.Intent,
-            ProfileHomeDetailContract.State,
-            ProfileHomeDetailContract.Effect
-            >(ProfileHomeDetailContract.State()) {
+class ProfileHomeDetailVm @Inject constructor() : BaseVM<ProfileHomeDetailContract.Intent,
+        ProfileHomeDetailContract.State,
+        ProfileHomeDetailContract.Effect>(
+    ProfileHomeDetailContract.State()
+) {
 
-    override fun handleIntent(
-        intent: ProfileHomeDetailContract.Intent,
-    ) {
+    override fun handleIntent(intent: ProfileHomeDetailContract.Intent) {
         when (intent) {
-            ProfileHomeDetailContract.Intent.OnClick -> {
-                sendEffect {
-                    ProfileHomeDetailContract.Effect.ShowMessage(
-                        "Profile clicked"
-                    )
-                }
-            }
-
-            ProfileHomeDetailContract.Intent.OnLogout -> {
-                sendEffect {
-                    ProfileHomeDetailContract.Effect.Logout
-                }
-            }
-
-            ProfileHomeDetailContract.Intent.OnDeleteAccount -> {
-                // Call delete account API here
-
-                sendEffect {
-                    ProfileHomeDetailContract.Effect.ShowMessage(
-                        "Account deleted"
-                    )
-                }
-                sendEffect {
-                    ProfileHomeDetailContract.Effect.OnDeleteAccount
-                }
-            }
-
             is ProfileHomeDetailContract.Intent.OnGetDetails -> getDetails(intent.details)
+            
+            ProfileHomeDetailContract.Intent.OnLogout -> {
+                sendEffect { ProfileHomeDetailContract.Effect.Logout }
+            }
+            
+            ProfileHomeDetailContract.Intent.OnDeleteAccount -> {
+                sendEffect { ProfileHomeDetailContract.Effect.ShowMessage("Account deleted") }
+                sendEffect { ProfileHomeDetailContract.Effect.OnDeleteAccount }
+            }
+            
+            is ProfileHomeDetailContract.Intent.UpdateName -> {
+                updateState { it.copy(name = intent.name) }
+            }
+            
+            is ProfileHomeDetailContract.Intent.UpdateUsername -> {
+                updateState { it.copy(username = intent.username) }
+            }
+            
+            is ProfileHomeDetailContract.Intent.UpdateDob -> {
+                updateState { it.copy(dob = intent.dob) }
+            }
+            
+            is ProfileHomeDetailContract.Intent.UpdateCountry -> {
+                updateState { it.copy(country = intent.country) }
+            }
+            
+            ProfileHomeDetailContract.Intent.SaveProfile -> {
+                sendEffect { ProfileHomeDetailContract.Effect.ShowMessage("Profile Saved! 🌟") }
+            }
         }
     }
 

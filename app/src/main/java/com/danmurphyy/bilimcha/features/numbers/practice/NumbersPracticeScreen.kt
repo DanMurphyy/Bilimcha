@@ -33,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
 import com.danmurphyy.bilimcha.navigations.VisualityType
@@ -52,8 +56,6 @@ import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen
 import com.danmurphyy.bilimcha.uibases.SoundPlayer
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 class NumbersPracticeScreen(override val featureKey: NumbersPracticeKey) :
     BaseScreen<NumbersPracticeKey> {
@@ -61,6 +63,7 @@ class NumbersPracticeScreen(override val featureKey: NumbersPracticeKey) :
     override fun Content() {
         val navigation = LocalBackStackController.current
         val context = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
         val vm: NumbersPracticeVm = hiltViewModel()
         val state by vm.state.collectAsState()
 
@@ -75,6 +78,10 @@ class NumbersPracticeScreen(override val featureKey: NumbersPracticeKey) :
                         SoundPlayer.playSound(context, effect.url)
                     }
 
+                    NumbersPracticeContract.Effect.StopAudio -> {
+                        SoundPlayer.stopSound()
+                    }
+
                     NumbersPracticeContract.Effect.NavigateBack -> {
                         navigation.pop()
                     }
@@ -82,19 +89,17 @@ class NumbersPracticeScreen(override val featureKey: NumbersPracticeKey) :
             }
         }
 
-        // Auto-play audio when number changes
-        LaunchedEffect(state.currentIndex, state.isLoading, state.isFinished) {
-            if (state.autoPlayAudio && !state.isLoading && !state.isFinished) {
-                delay(200.milliseconds) // Small delay for visual transition
-                vm.uiEvent(NumbersPracticeContract.Intent.PlayAudio)
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_PAUSE -> vm.uiEvent(NumbersPracticeContract.Intent.OnPause)
+                    Lifecycle.Event.ON_RESUME -> vm.uiEvent(NumbersPracticeContract.Intent.OnResume)
+                    else -> {}
+                }
             }
-        }
-
-        // Auto-advance logic
-        LaunchedEffect(state.currentIndex, state.isLoading, state.isFinished) {
-            if (state.autoAdvance && !state.isLoading && !state.isFinished) {
-                delay(3000.milliseconds) // Wait for 4 seconds (audio + observation time)
-                vm.uiEvent(NumbersPracticeContract.Intent.NextNumber)
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
             }
         }
 

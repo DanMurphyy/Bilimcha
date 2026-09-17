@@ -12,6 +12,8 @@ interface NumbersPracticeContract {
         data object PlayAudio : Intent
         data object RepeatFromStart : Intent
         data object Finish : Intent
+        data object OnPause : Intent
+        data object OnResume : Intent
     }
 
     @Immutable
@@ -29,6 +31,7 @@ interface NumbersPracticeContract {
 
     sealed interface Effect {
         data class PlayAudio(val url: String) : Effect
+        data object StopAudio : Effect
         data object NavigateBack : Effect
     }
 }
