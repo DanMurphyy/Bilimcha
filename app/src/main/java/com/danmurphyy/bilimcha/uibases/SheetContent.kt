@@ -12,6 +12,8 @@ interface SheetContent {
     val canDismiss: Boolean
         get() = true
 
+    fun onDismissed() {}
+
     @Composable
     fun Content()
 }

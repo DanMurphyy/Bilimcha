@@ -14,5 +14,6 @@ interface MainHomeContract {
     sealed interface Effect {
         data class ShowMessage(val message: String) : Effect
         data object NavigateToProfile : Effect
+        data object ShowRegistrationWall : Effect
     }
 }

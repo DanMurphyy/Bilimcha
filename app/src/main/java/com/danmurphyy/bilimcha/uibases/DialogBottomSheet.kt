@@ -49,6 +49,10 @@ class DialogBottomSheet(
     override val canDismiss = data.canDismiss
     override val initialFullExpand = false
 
+    override fun onDismissed() {
+        data.onDismiss()
+    }
+
     @Composable
     override fun Content() {
         Card(

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.danmurphyy.bilimcha.features.registration.QuickRegistrationSheet
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.LocalSheetController
 import com.danmurphyy.bilimcha.navigations.MainHomeKey
@@ -98,6 +99,14 @@ class MainHomeScreen(override val featureKey: MainHomeKey) : BaseScreen<MainHome
                                     name = "John Doe",
                                     extras = "Extra Data"
                                 )
+                            )
+                        )
+                    }
+
+                    MainHomeContract.Effect.ShowRegistrationWall -> {
+                        sheetController.show(
+                            QuickRegistrationSheet(
+                                onDismiss = { sheetController.clear() }
                             )
                         )
                     }

@@ -28,9 +28,13 @@ class EditProfileSheet(
     private val state: ProfileHomeDetailContract.State,
     private val onIntent: (ProfileHomeDetailContract.Intent) -> Unit,
     private val onDeleteRequest: () -> Unit,
-    private val onDismiss: () -> Unit
+    private val onDismiss: () -> Unit,
 ) : SheetContent {
     override val initialFullExpand = true
+
+    override fun onDismissed() {
+        onDismiss()
+    }
 
     @Composable
     override fun Content() {
@@ -63,7 +67,13 @@ class EditProfileSheet(
                         value = state.username,
                         label = "Username",
                         icon = Icons.Default.AlternateEmail,
-                        onValueChange = { onIntent(ProfileHomeDetailContract.Intent.UpdateUsername(it)) }
+                        onValueChange = {
+                            onIntent(
+                                ProfileHomeDetailContract.Intent.UpdateUsername(
+                                    it
+                                )
+                            )
+                        }
                     )
                 }
                 item {
@@ -111,7 +121,7 @@ class EditProfileSheet(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Delete Account", fontWeight = FontWeight.Bold)
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -121,7 +131,7 @@ class EditProfileSheet(
         value: String,
         label: String,
         icon: ImageVector,
-        onValueChange: (String) -> Unit
+        onValueChange: (String) -> Unit,
     ) {
         OutlinedTextField(
             value = value,
@@ -141,7 +151,7 @@ class EditProfileSheet(
 }
 
 class StatisticsSheet(
-    private val categories: List<ProfileHomeDetailContract.CategoryProgress>
+    private val categories: List<ProfileHomeDetailContract.CategoryProgress>,
 ) : SheetContent {
     override val initialFullExpand = true
 
@@ -166,7 +176,7 @@ class StatisticsSheet(
                     CategoryProgressItem(category)
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

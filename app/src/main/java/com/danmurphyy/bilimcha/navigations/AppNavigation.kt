@@ -113,6 +113,7 @@ fun BottomSheetHost(innerPadding: PaddingValues) {
         Dialog(
             onDismissRequest = {
                 if (sheet.canDismiss) {
+                    sheet.onDismissed()
                     scope.launch(Dispatchers.Main.immediate) {
                         sheetController.hide()
                         sheetController.clear()
@@ -124,7 +125,8 @@ fun BottomSheetHost(innerPadding: PaddingValues) {
         }
     } else {
         val sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = sheet.initialFullExpand
+            skipPartiallyExpanded = sheet.initialFullExpand,
+            confirmValueChange = { sheet.canDismiss }
         )
 
         LaunchedEffect(sheet) {
@@ -151,6 +153,7 @@ fun BottomSheetHost(innerPadding: PaddingValues) {
                 .statusBarsPadding(),
             sheetState = sheetState,
             onDismissRequest = {
+                sheet.onDismissed()
                 scope.launch(Dispatchers.Main.immediate) {
                     sheetController.clear()
                 }

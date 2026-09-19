@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.danmurphyy.bilimcha.data.models.NumbersRange
+import com.danmurphyy.bilimcha.features.registration.QuickRegistrationSheet
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.LocalSheetController
 import com.danmurphyy.bilimcha.navigations.NumbersDashboardKey
@@ -71,10 +72,8 @@ import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
-import com.danmurphyy.bilimcha.navigations.QuickRegistrationKey
 
 class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
     BaseScreen<NumbersDashboardKey> {
@@ -96,24 +95,13 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
         LaunchedEffect(state.showRegistrationWarning) {
             if (state.showRegistrationWarning) {
                 sheetController.show(
-                    DialogBottomSheet(
-                        data = DialogSheetData(
-                            title = "Registration Required!",
-                            canDismiss = false,
-                            subtitle = "You haven't registered yet. If you continue without an account, your learning progress and test results may be lost!",
-                            icon = Icons.Default.Warning,
-                            iconColor = Color.Red,
-                            dismissText = "Later",
-                            confirmText = "Register Now",
-                            onDismiss = {
-                                vm.uiEvent(NumbersDashboardContract.Intent.DismissRegistrationWarning)
-                                sheetController.clear()
-                            },
-                            onConfirm = {
-                                vm.uiEvent(NumbersDashboardContract.Intent.NavigateToRegistration)
-                                sheetController.clear()
-                            }
-                        )
+                    QuickRegistrationSheet(
+                        title = "Save Your Progress! 🌟",
+                        subtitle = "Log in or create an account to keep your achievements.",
+                        onDismiss = {
+                            vm.uiEvent(NumbersDashboardContract.Intent.DismissRegistrationWarning)
+                            sheetController.clear()
+                        }
                     )
                 )
             }
@@ -175,7 +163,13 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                     }
 
                     NumbersDashboardContract.Effect.NavigateToRegistration -> {
-                        navigation.push(QuickRegistrationKey)
+                        sheetController.show(
+                            QuickRegistrationSheet(
+                                title = "Let's Track Your Progress! 🌟",
+                                subtitle = "Please register or log in to track your learning journey and ensure your achievements are never lost.",
+                                onDismiss = { sheetController.clear() }
+                            )
+                        )
                     }
                 }
             }

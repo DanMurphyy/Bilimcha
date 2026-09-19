@@ -14,7 +14,7 @@ class UserRepository @Inject constructor(
 ) {
     fun getUser(): Flow<UserEntity?> = userDao.getUser()
 
-    suspend fun saveUser(name: String, birthDate: Long) {
+    suspend fun saveUser(name: String, birthDate: Long, country: String = "") {
         val initialStats = UserStats(
             numbers = listOf(
                 NumbersRangeStatus(
@@ -28,6 +28,7 @@ class UserRepository @Inject constructor(
             UserEntity(
                 name = name,
                 birthDate = birthDate,
+                country = country,
                 stats = initialStats,
             )
         )

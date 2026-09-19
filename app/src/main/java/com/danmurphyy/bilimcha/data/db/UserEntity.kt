@@ -17,11 +17,13 @@ data class UserEntity(
     val stats: UserStats = UserStats(),
 )
 
+@Serializable
 @Parcelize
 data class UserStats(
     val numbers: List<NumbersRangeStatus> = emptyList(),
 ) : Parcelable
 
+@Serializable
 @Parcelize
 data class NumbersRangeStatus(
     val rangeId: String,
