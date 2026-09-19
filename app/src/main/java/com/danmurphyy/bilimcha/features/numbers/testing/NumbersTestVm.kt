@@ -1,10 +1,13 @@
 package com.danmurphyy.bilimcha.features.numbers.testing
 
 import androidx.lifecycle.viewModelScope
-import com.danmurphyy.bilimcha.features.numbers.Number
-import com.danmurphyy.bilimcha.features.numbers.NumbersRepository
+import com.danmurphyy.bilimcha.data.repository.UserRepository
+import com.danmurphyy.bilimcha.data.models.Number
+import com.danmurphyy.bilimcha.data.repository.NumbersRepository
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
 import com.danmurphyy.bilimcha.uibases.BaseVM
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -12,17 +15,25 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class NumbersTestVm @Inject constructor() :
+@HiltViewModel
+class NumbersTestVm @Inject constructor(
+    private val userRepository: UserRepository,
+) :
     BaseVM<NumbersTestContract.Intent, NumbersTestContract.State, NumbersTestContract.Effect>(
         NumbersTestContract.State()
     ) {
 
     private var testNumbers = listOf<Number>()
     private var audioJob: Job? = null
+    private lateinit var currentKey: NumbersTestKey
 
     override fun handleIntent(intent: NumbersTestContract.Intent) {
         when (intent) {
-            is NumbersTestContract.Intent.Init -> initTest(intent.key)
+            is NumbersTestContract.Intent.Init -> {
+                currentKey = intent.key
+                initTest(intent.key)
+            }
+
             is NumbersTestContract.Intent.SelectOption -> selectOption(intent.number)
             NumbersTestContract.Intent.PlayCurrentAudio -> playCurrentAudio()
             NumbersTestContract.Intent.NextQuestion -> nextQuestion()
@@ -39,11 +50,7 @@ class NumbersTestVm @Inject constructor() :
     }
 
     private fun initTest(key: NumbersTestKey) {
-        testNumbers = NumbersRepository.getNumbers(
-            from = key.fromValue,
-            to = key.toValue,
-            mode = key.rangeMode
-        ).shuffled()
+        testNumbers = NumbersRepository.getNumbers(key.range).shuffled()
 
         updateState {
             it.copy(
@@ -76,8 +83,8 @@ class NumbersTestVm @Inject constructor() :
 
     private fun setupQuestion(index: Int) {
         if (index >= testNumbers.size) {
+            saveCurrentResults()
             if (getState().isRepeatMode) {
-                // Save current results as historical and restart
                 val currentResult = NumbersTestContract.ResultData(
                     correct = getState().correctCount,
                     wrong = getState().wrongCount
@@ -100,17 +107,14 @@ class NumbersTestVm @Inject constructor() :
         }
 
         val currentNumber = testNumbers[index]
-
-        // Pick 2 wrong options strictly from the same filtered test range pool to preserve valid difficulty constraints
         val otherRangeNumbers = testNumbers.filter { it.value != currentNumber.value }
-        
-        // Fallback to global pool only if the selected range has less than 3 elements total
+
         val wrongOptions = if (otherRangeNumbers.size >= 2) {
             otherRangeNumbers.shuffled().take(2)
         } else {
             NumbersRepository.numbers.filter { it.value != currentNumber.value }.shuffled().take(2)
         }
-        
+
         val options = (wrongOptions + currentNumber).shuffled()
 
         updateState {
@@ -191,7 +195,6 @@ class NumbersTestVm @Inject constructor() :
 
     private fun handleWrongSelection() {
         val soundPath = "sounds/${getState().language}/wrong.mp3"
-        // Ensure repetitive audio stops before feedback plays
         stopAudioLoop()
         sendEffect { NumbersTestContract.Effect.PlaySound(soundPath) }
 
@@ -207,14 +210,12 @@ class NumbersTestVm @Inject constructor() :
             }
             viewModelScope.launch {
                 delay(2000.milliseconds)
-                // Clear colors right before moving onto the next card structure
                 updateState { it.copy(selectedOption = null, isCorrectSelected = null) }
                 nextQuestion()
             }
         } else {
             updateState { it.copy(currentWrongAttempts = newWrongAttempts) }
             viewModelScope.launch {
-                // Keep the item red for a short time (e.g. 1.2 seconds) to sync with audio duration feedback
                 delay(1200.milliseconds)
                 updateState {
                     it.copy(
@@ -232,6 +233,19 @@ class NumbersTestVm @Inject constructor() :
     private fun nextQuestion() {
         stopAudioLoop()
         setupQuestion(getState().currentIndex + 1)
+    }
+
+    private fun saveCurrentResults() {
+        val state = getState()
+        val correct = state.correctCount
+        val total = state.totalCount
+        if (total == 0) return
+
+        if (correct == total) {
+            viewModelScope.launch(Dispatchers.IO) {
+                userRepository.updateNumbersStats(currentKey.range)
+            }
+        }
     }
 
     private fun playCurrentAudio() {
@@ -273,7 +287,6 @@ class NumbersTestVm @Inject constructor() :
         updateState { it.copy(showExitDialog = false) }
         val lastResult = getState().lastCycleResult
         if (lastResult != null) {
-            // Show last historical result before leaving
             updateState {
                 it.copy(
                     isFinished = true,

@@ -1,9 +1,11 @@
 package com.danmurphyy.bilimcha.features.numbers.practice
 
 import androidx.lifecycle.viewModelScope
-import com.danmurphyy.bilimcha.features.numbers.NumbersRepository
+import com.danmurphyy.bilimcha.data.repository.UserRepository
+import com.danmurphyy.bilimcha.data.repository.NumbersRepository
 import com.danmurphyy.bilimcha.uibases.BaseVM
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -11,7 +13,9 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class NumbersPracticeVm @Inject constructor() : BaseVM<NumbersPracticeContract.Intent,
+class NumbersPracticeVm @Inject constructor(
+    private val userRepository: UserRepository
+) : BaseVM<NumbersPracticeContract.Intent,
         NumbersPracticeContract.State,
         NumbersPracticeContract.Effect>(
     NumbersPracticeContract.State()
@@ -22,11 +26,7 @@ class NumbersPracticeVm @Inject constructor() : BaseVM<NumbersPracticeContract.I
     override fun handleIntent(intent: NumbersPracticeContract.Intent) {
         when (intent) {
             is NumbersPracticeContract.Intent.Init -> {
-                val filteredNumbers = NumbersRepository.getNumbers(
-                    from = intent.key.fromValue,
-                    to = intent.key.toValue,
-                    mode = intent.key.rangeMode
-                )
+                val filteredNumbers = NumbersRepository.getNumbers(intent.key.range)
                 updateState {
                     it.copy(
                         isLoading = false,
