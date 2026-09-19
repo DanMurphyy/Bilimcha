@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.danmurphyy.bilimcha.features.numbers.Number
+import com.danmurphyy.bilimcha.data.models.Number
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
 import com.danmurphyy.bilimcha.navigations.VisualityType

@@ -2,7 +2,7 @@ package com.danmurphyy.bilimcha.features.numbers.practice
 
 import androidx.compose.runtime.Immutable
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
-import com.danmurphyy.bilimcha.features.numbers.Number
+import com.danmurphyy.bilimcha.data.models.Number
 
 interface NumbersPracticeContract {
     sealed interface Intent {

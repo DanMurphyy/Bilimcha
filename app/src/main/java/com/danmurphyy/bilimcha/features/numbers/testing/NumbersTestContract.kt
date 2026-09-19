@@ -1,6 +1,6 @@
 package com.danmurphyy.bilimcha.features.numbers.testing
 
-import com.danmurphyy.bilimcha.features.numbers.Number
+import com.danmurphyy.bilimcha.data.models.Number
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
 import com.danmurphyy.bilimcha.navigations.VisualityType
 

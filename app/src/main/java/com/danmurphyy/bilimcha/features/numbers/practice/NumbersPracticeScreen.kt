@@ -51,7 +51,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
 import com.danmurphyy.bilimcha.navigations.VisualityType
-import com.danmurphyy.bilimcha.features.numbers.Number
+import com.danmurphyy.bilimcha.data.models.Number
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen
