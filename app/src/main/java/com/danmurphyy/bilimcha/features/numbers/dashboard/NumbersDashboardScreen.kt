@@ -11,7 +11,6 @@ import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -55,9 +53,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.danmurphyy.bilimcha.data.models.NumbersRange
 import com.danmurphyy.bilimcha.navigations.LocalBackStackController
+import com.danmurphyy.bilimcha.navigations.LocalSheetController
 import com.danmurphyy.bilimcha.navigations.NumbersDashboardKey
 import com.danmurphyy.bilimcha.navigations.NumbersPracticeKey
 import com.danmurphyy.bilimcha.navigations.NumbersTestKey
@@ -65,9 +64,17 @@ import com.danmurphyy.bilimcha.navigations.VisualityType
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.AppHeader
 import com.danmurphyy.bilimcha.uibases.BaseScreen
+import com.danmurphyy.bilimcha.uibases.DialogBottomSheet
+import com.danmurphyy.bilimcha.uibases.DialogSheetData
 import com.danmurphyy.bilimcha.uibases.shimmer
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
+import com.danmurphyy.bilimcha.navigations.QuickRegistrationKey
 
 class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
     BaseScreen<NumbersDashboardKey> {
@@ -75,6 +82,7 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
     @Composable
     override fun Content() {
         val navigation = LocalBackStackController.current
+        val sheetController = LocalSheetController.current
         val themeColor = KidsNumbers
         val vm: NumbersDashboardVm = hiltViewModel()
         val state by vm.state.collectAsState()
@@ -85,15 +93,68 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
             isTransitionFinished = true
         }
 
+        LaunchedEffect(state.showRegistrationWarning) {
+            if (state.showRegistrationWarning) {
+                sheetController.show(
+                    DialogBottomSheet(
+                        data = DialogSheetData(
+                            title = "Registration Required!",
+                            canDismiss = false,
+                            subtitle = "You haven't registered yet. If you continue without an account, your learning progress and test results may be lost!",
+                            icon = Icons.Default.Warning,
+                            iconColor = Color.Red,
+                            dismissText = "Later",
+                            confirmText = "Register Now",
+                            onDismiss = {
+                                vm.uiEvent(NumbersDashboardContract.Intent.DismissRegistrationWarning)
+                                sheetController.clear()
+                            },
+                            onConfirm = {
+                                vm.uiEvent(NumbersDashboardContract.Intent.NavigateToRegistration)
+                                sheetController.clear()
+                            }
+                        )
+                    )
+                )
+            }
+        }
+
+        LaunchedEffect(state.isSettingsDialogOpen) {
+            if (state.isSettingsDialogOpen) {
+                sheetController.show(
+                    DialogBottomSheet(
+                        data = DialogSheetData(
+                            title = "Additional Settings",
+                            isDialog = true,
+                            canDismiss = false,
+                            dismissText = "Close",
+                            content = {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    HorizontalDivider(
+                                        color = Color.LightGray.copy(alpha = 0.3f),
+                                        thickness = 1.dp
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    SettingsGrid(state, themeColor, vm)
+                                }
+                            },
+                            onDismiss = {
+                                vm.uiEvent(NumbersDashboardContract.Intent.ToggleSettingsDialog)
+                                sheetController.clear()
+                            }
+                        )
+                    )
+                )
+            }
+        }
+
         LaunchedEffect(Unit) {
             vm.effect.collect { effect ->
                 when (effect) {
                     is NumbersDashboardContract.Effect.NavigateToPractice -> {
                         navigation.push(
                             NumbersPracticeKey(
-                                fromValue = effect.from,
-                                toValue = effect.to,
-                                rangeMode = effect.rangeMode,
+                                range = effect.range,
                                 language = effect.language,
                                 visualityType = effect.visualityType,
                                 isRepeat = effect.isRepeat,
@@ -105,14 +166,16 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                     is NumbersDashboardContract.Effect.NavigateToTest -> {
                         navigation.push(
                             NumbersTestKey(
-                                fromValue = effect.from,
-                                toValue = effect.to,
-                                rangeMode = effect.rangeMode,
+                                range = effect.range,
                                 language = effect.language,
                                 visualityType = effect.visualityType,
                                 isRepeat = effect.isRepeat
                             )
                         )
+                    }
+
+                    NumbersDashboardContract.Effect.NavigateToRegistration -> {
+                        navigation.push(QuickRegistrationKey)
                     }
                 }
             }
@@ -153,12 +216,6 @@ class NumbersDashboardScreen(override val featureKey: NumbersDashboardKey) :
                     if (state.isLoading) {
                         DashboardShimmer()
                     } else {
-                        if (state.isSettingsDialogOpen) {
-                            SettingsDialog(state, themeColor, vm) {
-                                vm.uiEvent(NumbersDashboardContract.Intent.ToggleSettingsDialog)
-                            }
-                        }
-
                         HorizontalDivider(
                             color = Color.LightGray.copy(alpha = 0.3f),
                             thickness = 1.dp
@@ -291,55 +348,6 @@ private fun AdditionalSettingsToggle(themeColor: Color, onClick: () -> Unit) {
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.labelLarge
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsDialog(
-    state: NumbersDashboardContract.State,
-    themeColor: Color,
-    vm: NumbersDashboardVm,
-    onDismiss: () -> Unit,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Additional Settings",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = themeColor
-                )
-
-                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
-
-                SettingsGrid(state, themeColor, vm)
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = themeColor)
-                ) {
-                    Text("Close", fontWeight = FontWeight.Bold)
-                }
             }
         }
     }
@@ -497,28 +505,12 @@ private fun LanguageSelector(
     }
 }
 
-private data class QuickRangeItem(
-    val label: String,
-    val from: Int,
-    val to: Int,
-    val mode: String,
-)
-
 @Composable
 private fun RangeSelectionSection(
     state: NumbersDashboardContract.State,
     vm: NumbersDashboardVm,
 ) {
-    val quickRanges = remember {
-        listOf(
-            QuickRangeItem("All", 0, 20, "full_all"),
-            QuickRangeItem("0-10", 0, 10, "all"),
-            QuickRangeItem("11-20", 11, 20, "all"),
-            QuickRangeItem("21-30", 21, 30, "all"),
-            QuickRangeItem("40-90 (Tens)", 40, 90, "tenths"),
-            QuickRangeItem("100-900 + 1M", 100, 1000000, "hundreds_million")
-        )
-    }
+    val ranges = remember { NumbersRange.entries }
     val themeColor = KidsNumbers
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -528,50 +520,58 @@ private fun RangeSelectionSection(
             fontWeight = FontWeight.Bold
         )
 
-        // Split into chunks of 2 items per row to form a neat grid fully visible within the screen
-        val rows = quickRanges.chunked(2)
+        val rows = ranges.chunked(2)
         rows.forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                rowItems.forEach { item ->
-                    val isSelected = if (item.mode == "full_all") {
-                        state.rangeMode == "full_all"
-                    } else {
-                        state.selectedFrom == item.from &&
-                                state.selectedTo == item.to &&
-                                state.rangeMode == item.mode
+                rowItems.forEach { range ->
+                    val isUnlocked = state.unlockedRanges.contains(range.id)
+                    val isSelected = state.selectedRange == range
+                    val label = when (range) {
+                        NumbersRange.RANGE_0_10 -> "0-10"
+                        NumbersRange.RANGE_11_20 -> "11-20"
+                        NumbersRange.RANGE_21_30 -> "21-30"
+                        NumbersRange.RANGE_TENS -> "40-90 (Tens)"
+                        NumbersRange.RANGE_HUNDREDS -> "100-900 + 1M"
+                        NumbersRange.RANGE_ALL_AVAILABLE -> "All"
                     }
 
                     val cardBgColor by animateColorAsState(
-                        targetValue = if (isSelected) themeColor else Color.White,
+                        targetValue = when {
+                            !isUnlocked -> Color.LightGray.copy(alpha = 0.2f)
+                            isSelected -> themeColor
+                            else -> Color.White
+                        },
                         animationSpec = tween(durationMillis = 250),
                         label = "range_bg"
                     )
                     val cardTextColor by animateColorAsState(
-                        targetValue = if (isSelected) Color.White else Color.DarkGray,
+                        targetValue = when {
+                            !isUnlocked -> Color.Gray
+                            isSelected -> Color.White
+                            else -> Color.DarkGray
+                        },
                         animationSpec = tween(durationMillis = 250),
                         label = "range_text"
                     )
                     val cardBorderColor by animateColorAsState(
-                        targetValue = if (isSelected) themeColor else Color.LightGray.copy(alpha = 0.6f),
+                        targetValue = when {
+                            !isUnlocked -> Color.LightGray.copy(alpha = 0.3f)
+                            isSelected -> themeColor
+                            else -> Color.LightGray.copy(alpha = 0.6f)
+                        },
                         animationSpec = tween(durationMillis = 250),
                         label = "range_border"
                     )
-                    
+
                     Card(
                         modifier = Modifier
                             .weight(1f)
                             .height(64.dp)
-                            .clickable {
-                                vm.uiEvent(
-                                    NumbersDashboardContract.Intent.SelectQuickRange(
-                                        item.from,
-                                        item.to,
-                                        item.mode
-                                    )
-                                )
+                            .clickable(enabled = isUnlocked) {
+                                vm.uiEvent(NumbersDashboardContract.Intent.SelectRange(range))
                             },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
@@ -582,19 +582,32 @@ private fun RangeSelectionSection(
                             color = cardBorderColor
                         ),
                         elevation = CardDefaults.cardElevation(
-                            defaultElevation = if (isSelected) 6.dp else 2.dp
+                            defaultElevation = if (isSelected && isUnlocked) 6.dp else 0.dp
                         )
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = item.label,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = cardTextColor
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (!isUnlocked) {
+                                    Icon(
+                                        Icons.Default.Lock,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = Color.Gray
+                                    )
+                                }
+                                Text(
+                                    text = label,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = cardTextColor
+                                )
+                            }
                         }
                     }
                 }
