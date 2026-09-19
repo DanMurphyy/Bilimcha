@@ -109,6 +109,12 @@ dependencies {
     // Required for hiltViewModel() in Jetpack Compose
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
+    // Room
+    val room_version = "2.8.5"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+
 // Testing
     // Unit tests
     testImplementation("junit:junit:4.13.2")
