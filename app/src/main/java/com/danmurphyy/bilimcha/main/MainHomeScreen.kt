@@ -72,13 +72,7 @@ class MainHomeScreen(override val featureKey: MainHomeKey) : BaseScreen<MainHome
                     Icons.Filled.AccountCircle
                 ) {
                     navigation.push(
-                        ProfileHomeDetailKey(
-                            data = UserFeatureData(
-                                id = "123",
-                                name = "John Doe",
-                                extras = "Extra Data"
-                            )
-                        )
+                        ProfileHomeDetailKey(data = UserFeatureData())
                     )
                 }
             )
@@ -94,11 +88,7 @@ class MainHomeScreen(override val featureKey: MainHomeKey) : BaseScreen<MainHome
                     MainHomeContract.Effect.NavigateToProfile -> {
                         navigation.push(
                             ProfileHomeDetailKey(
-                                data = UserFeatureData(
-                                    id = "123",
-                                    name = "John Doe",
-                                    extras = "Extra Data"
-                                )
+                                data = UserFeatureData()
                             )
                         )
                     }

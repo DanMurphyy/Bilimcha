@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,10 +23,14 @@ import com.danmurphyy.bilimcha.ui.theme.KidsABC
 import com.danmurphyy.bilimcha.ui.theme.KidsAnimals
 import com.danmurphyy.bilimcha.ui.theme.KidsNumbers
 import com.danmurphyy.bilimcha.uibases.SheetContent
+import kotlinx.coroutines.flow.StateFlow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class EditProfileSheet(
-    private val state: ProfileHomeDetailContract.State,
-    private val onIntent: (ProfileHomeDetailContract.Intent) -> Unit,
+    private val initialState: ProfileHomeDetailContract.State,
+    private val onSave: (ProfileHomeDetailContract.State) -> Unit,
     private val onDeleteRequest: () -> Unit,
     private val onDismiss: () -> Unit,
 ) : SheetContent {
@@ -36,19 +40,42 @@ class EditProfileSheet(
         onDismiss()
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        var name by remember { mutableStateOf(initialState.name) }
+        var username by remember { mutableStateOf(initialState.username) }
+        var dob by remember { mutableStateOf(initialState.dob) }
+        var country by remember { mutableStateOf(initialState.country) }
+        
+        var showDatePicker by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp)
         ) {
-            Text(
-                text = "Edit Profile",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Edit Profile",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black,
+                )
+
+                IconButton(onClick = onDeleteRequest) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteOutline,
+                        contentDescription = "Delete Account",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -56,40 +83,40 @@ class EditProfileSheet(
             ) {
                 item {
                     ProfileTextField(
-                        value = state.name,
+                        value = name,
                         label = "Kid's Name",
                         icon = Icons.Default.Person,
-                        onValueChange = { onIntent(ProfileHomeDetailContract.Intent.UpdateName(it)) }
+                        onValueChange = { name = it }
                     )
                 }
                 item {
                     ProfileTextField(
-                        value = state.username,
+                        value = username,
                         label = "Username",
                         icon = Icons.Default.AlternateEmail,
-                        onValueChange = {
-                            onIntent(
-                                ProfileHomeDetailContract.Intent.UpdateUsername(
-                                    it
-                                )
-                            )
-                        }
+                        onValueChange = { username = it }
                     )
                 }
                 item {
                     ProfileTextField(
-                        value = state.dob,
+                        value = dob,
                         label = "Date of Birth",
                         icon = Icons.Default.DateRange,
-                        onValueChange = { onIntent(ProfileHomeDetailContract.Intent.UpdateDob(it)) }
+                        readOnly = true,
+                        trailingIcon = {
+                            TextButton(onClick = { showDatePicker = true }) {
+                                Text("Pick", color = KidsNumbers, fontWeight = FontWeight.Bold)
+                            }
+                        },
+                        onValueChange = { dob = it }
                     )
                 }
                 item {
                     ProfileTextField(
-                        value = state.country,
+                        value = country,
                         label = "Country",
                         icon = Icons.Default.Public,
-                        onValueChange = { onIntent(ProfileHomeDetailContract.Intent.UpdateCountry(it)) }
+                        onValueChange = { country = it }
                     )
                 }
             }
@@ -98,7 +125,14 @@ class EditProfileSheet(
 
             Button(
                 onClick = {
-                    onIntent(ProfileHomeDetailContract.Intent.SaveProfile)
+                    onSave(
+                        initialState.copy(
+                            name = name,
+                            username = username,
+                            dob = dob,
+                            country = country
+                        )
+                    )
                     onDismiss()
                 },
                 modifier = Modifier
@@ -112,17 +146,46 @@ class EditProfileSheet(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            TextButton(
-                onClick = onDeleteRequest,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            OutlinedButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(2.dp, Color.LightGray)
             ) {
-                Icon(Icons.Default.DeleteOutline, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Delete Account", fontWeight = FontWeight.Bold)
+                Text("Cancel", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                val dobStr = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                                    .format(Date(it))
+                                dob = dobStr
+                            }
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("OK", color = KidsNumbers, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel", color = Color.Gray)
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
         }
     }
 
@@ -131,6 +194,8 @@ class EditProfileSheet(
         value: String,
         label: String,
         icon: ImageVector,
+        readOnly: Boolean = false,
+        trailingIcon: @Composable (() -> Unit)? = null,
         onValueChange: (String) -> Unit,
     ) {
         OutlinedTextField(
@@ -138,6 +203,8 @@ class EditProfileSheet(
             onValueChange = onValueChange,
             label = { Text(label) },
             leadingIcon = { Icon(icon, contentDescription = null, tint = KidsNumbers) },
+            trailingIcon = trailingIcon,
+            readOnly = readOnly,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(

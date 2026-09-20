@@ -165,8 +165,8 @@ class ProfileHomeDetailScreen(
                                 onClick = {
                                     sheetController.show(
                                         EditProfileSheet(
-                                            state = uiState,
-                                            onIntent = { vm.uiEvent(it) },
+                                            initialState = uiState,
+                                            onSave = { vm.uiEvent(ProfileHomeDetailContract.Intent.SaveProfile(it)) },
                                             onDeleteRequest = {
                                                 sheetController.show(
                                                     DialogBottomSheet(

@@ -2,6 +2,7 @@ package com.danmurphyy.bilimcha.features.profile
 
 import androidx.compose.runtime.Immutable
 import com.danmurphyy.bilimcha.navigations.UserFeatureData
+import com.danmurphyy.bilimcha.uibases.UIState
 
 interface ProfileHomeDetailContract {
     sealed interface Intent {
@@ -12,31 +13,24 @@ interface ProfileHomeDetailContract {
         data class UpdateUsername(val username: String) : Intent
         data class UpdateDob(val dob: String) : Intent
         data class UpdateCountry(val country: String) : Intent
-        data object SaveProfile : Intent
+        data class SaveProfile(val updatedState: State) : Intent
     }
 
     @Immutable
     data class State(
         val isLoading: Boolean = false,
         val id: String = "",
-        val name: String = "Little Explorer",
-        val username: String = "explorer123",
-        val dob: String = "01.01.2020",
-        val country: String = "Uzbekistan",
+        val name: String = "",
+        val username: String = "",
+        val dob: String = "",
+        val country: String = "",
         val extras: String = "",
-        val email: String = "explorer@bilimcha.com",
-        val totalCorrect: Int = 245,
-        val totalPossible: Int = 300,
-        val totalProgress: Float = 0.81f,
-        val categoriesProgress: List<CategoryProgress> = listOf(
-            CategoryProgress("Numbers (EN)", 0.9f, 45, 50),
-            CategoryProgress("Numbers (RU)", 0.7f, 35, 50),
-            CategoryProgress("ABC English", 0.6f, 60, 100),
-            CategoryProgress("ABC Russian", 0.4f, 40, 100),
-            CategoryProgress("ABC Arabic", 0.2f, 20, 100),
-            CategoryProgress("Animals (EN)", 0.95f, 45, 50)
-        )
-    )
+        val email: String = "",
+        val totalCorrect: Int = 0,
+        val totalPossible: Int = 0,
+        val totalProgress: Float = 0f,
+        val categoriesProgress: List<CategoryProgress> = emptyList()
+    ) : UIState
 
     data class CategoryProgress(
         val name: String,

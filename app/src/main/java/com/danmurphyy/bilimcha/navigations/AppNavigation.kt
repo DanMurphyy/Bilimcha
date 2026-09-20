@@ -10,7 +10,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -109,57 +109,61 @@ fun BottomSheetHost(innerPadding: PaddingValues) {
     val sheet = sheetController.sheet.value ?: return
     val scope = rememberCoroutineScope()
 
-    if (sheet.isDialog) {
-        Dialog(
-            onDismissRequest = {
-                if (sheet.canDismiss) {
-                    sheet.onDismissed()
-                    scope.launch(Dispatchers.Main.immediate) {
-                        sheetController.hide()
+    // Ensure that every time a sheet is changed or cleared, the entire subtree
+    // is disposed and recreated. This prevents state leaking and aids GC.
+    key(sheet) {
+        if (sheet.isDialog) {
+            Dialog(
+                onDismissRequest = {
+                    if (sheet.canDismiss) {
+                        sheet.onDismissed()
+                        scope.launch(Dispatchers.Main.immediate) {
+                            sheetController.hide()
+                            sheetController.clear()
+                        }
+                    }
+                }
+            ) {
+                sheet.Content()
+            }
+        } else {
+            val sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = sheet.initialFullExpand,
+                confirmValueChange = { sheet.canDismiss }
+            )
+
+            LaunchedEffect(sheet) {
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    sheetState.show()
+                    if (sheet.initialFullExpand) {
+                        sheetState.expand()
+                    }
+                }
+            }
+
+            LaunchedEffect(sheetController.shouldDismiss.value) {
+                if (sheetController.shouldDismiss.value) {
+                    launch(start = CoroutineStart.UNDISPATCHED) {
+                        sheetState.hide()
                         sheetController.clear()
                     }
                 }
             }
-        ) {
-            sheet.Content()
-        }
-    } else {
-        val sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = sheet.initialFullExpand,
-            confirmValueChange = { sheet.canDismiss }
-        )
 
-        LaunchedEffect(sheet) {
-            launch(start = CoroutineStart.UNDISPATCHED) {
-                sheetState.show()
-                if (sheet.initialFullExpand) {
-                    sheetState.expand()
+            ModalBottomSheet(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .statusBarsPadding(),
+                sheetState = sheetState,
+                onDismissRequest = {
+                    sheet.onDismissed()
+                    scope.launch(Dispatchers.Main.immediate) {
+                        sheetController.clear()
+                    }
                 }
+            ) {
+                sheet.Content()
             }
-        }
-
-        LaunchedEffect(sheetController.shouldDismiss.value) {
-            if (sheetController.shouldDismiss.value) {
-                launch(start = CoroutineStart.UNDISPATCHED) {
-                    sheetState.hide()
-                    sheetController.clear()
-                }
-            }
-        }
-
-        ModalBottomSheet(
-            modifier = Modifier
-                .padding(innerPadding)
-                .statusBarsPadding(),
-            sheetState = sheetState,
-            onDismissRequest = {
-                sheet.onDismissed()
-                scope.launch(Dispatchers.Main.immediate) {
-                    sheetController.clear()
-                }
-            }
-        ) {
-            sheet.Content()
         }
     }
 }

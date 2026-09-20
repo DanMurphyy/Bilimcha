@@ -78,4 +78,15 @@ class UserRepository @Inject constructor(
     suspend fun clearUser() {
         userDao.clearUser()
     }
+
+    suspend fun updateProfile(name: String, birthDate: Long, country: String) {
+        val user = userDao.getUser().first() ?: return
+        userDao.updateUser(
+            user.copy(
+                name = name,
+                birthDate = birthDate,
+                country = country
+            )
+        )
+    }
 }
