@@ -101,6 +101,7 @@ dependencies {
     // Serialization (Mandatory for Nav3 typed keys)
     // Required for typed NavKeys (Serializable / Parcelable)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     // Hilt DI
     implementation("com.google.dagger:hilt-android:2.60.1")
