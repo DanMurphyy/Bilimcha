@@ -72,8 +72,11 @@ class ProfileHomeDetailVm @Inject constructor(
             }
             
             ProfileHomeDetailContract.Intent.OnDeleteAccount -> {
-                sendEffect { ProfileHomeDetailContract.Effect.ShowMessage("Account deleted") }
-                sendEffect { ProfileHomeDetailContract.Effect.OnDeleteAccount }
+                viewModelScope.launch {
+                    userRepository.clearUser()
+                    sendEffect { ProfileHomeDetailContract.Effect.ShowMessage("Account deleted 🗑️") }
+                    sendEffect { ProfileHomeDetailContract.Effect.OnDeleteAccount }
+                }
             }
             
             is ProfileHomeDetailContract.Intent.UpdateName -> {
